@@ -6,7 +6,7 @@ on:
       tag:
         description: "choice libuv version"
         required: true
-        default: "1.44.1"
+        default: "v1.44.1"
 
 jobs:
   init:
@@ -75,7 +75,7 @@ jobs:
       - name: Download libuv
         run: |
           git clone https://github.com/libuv/libuv.git
-          git checkout tags/${{ github.event.inputs.tag }}
+          git checkout ${{ github.event.inputs.tag }}
 
       - name: Build libuv
         run: |
