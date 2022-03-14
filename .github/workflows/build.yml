@@ -1,0 +1,97 @@
+name: build libuv
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "choice libuv version"
+        required: true
+        default: "1.44.1"
+
+jobs:
+  init:
+    runs-on: windows-latest
+    outputs:
+      output1: "${{ steps.create_release.outputs.upload_url }}"
+    steps:
+      - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+        with:
+          delete_release: true # default: false
+          tag_name: ${{ github.event.inputs.tag }} # tag name to delete
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create tag
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/${{ github.event.inputs.tag }}",
+              sha: context.sha
+            })
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          release_name: libuv-${{ github.event.inputs.tag }}
+          draft: false
+          prerelease: false
+
+      - name: Set upload url
+        run: |
+          echo "::set-output name=y::${{ steps.create_release.outputs.upload_url }}"
+          echo "${{ steps.create_release.outputs.upload_url }}"
+
+  build:
+    needs: init
+    strategy:
+      matrix:
+        build_type: ["Debug", "Release"]
+        arch: ["x86", "x64"]
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Install Server-Media-Foundation
+        shell: powershell
+        run: |
+          Install-WindowsFeature Server-Media-Foundation
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Download libuv
+        run: |
+          git clone -b ${{ github.event.inputs.tag }} --depth=1 https://github.com/libuv/libuv.git
+
+      - name: Build libuv
+        run: |
+          . ".\build.ps1"
+          BuildForWindows ${{matrix.arch}} ${{matrix.build_type}}
+
+      - name: Compress Package
+        run: |
+          7z a libuv-${{ github.event.inputs.tag }}.zip ./build/install/* -r
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.init.outputs.output1 }}
+          asset_path: libuv-${{ github.event.inputs.tag }}.zip
+          asset_name: libuv-${{ github.event.inputs.tag }}-${{matrix.build_type}}-${{matrix.arch}}-win.zip
+          asset_content_type: application/zip
