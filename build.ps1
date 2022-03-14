@@ -11,7 +11,7 @@ function BuildForWindows($platform, $build_type) {
     }
 
 
-    cmake -G "Visual Studio 16 2019" -A $msbuild_platform -D CMAKE_BUILD_TYPE=${build_type} -D CMAKE_INSTALL_PREFIX=install ..
+    cmake -G "Visual Studio 16 2019" -A $msbuild_platform -D CMAKE_BUILD_TYPE=${build_type} -D CMAKE_INSTALL_PREFIX=install ../libuv
 
     msbuild INSTALL.vcxproj /t:build /p:configuration=$build_type /p:platform=$msbuild_platform -maxcpucount
     ls

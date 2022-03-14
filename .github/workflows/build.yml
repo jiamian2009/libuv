@@ -77,6 +77,7 @@ jobs:
           git clone https://github.com/libuv/libuv.git
           cd libuv
           git checkout ${{ github.event.inputs.tag }}
+          cd ..
 
       - name: Build libuv
         run: |
