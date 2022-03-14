@@ -74,7 +74,8 @@ jobs:
 
       - name: Download libuv
         run: |
-          git clone --b ${{ github.event.inputs.tag }} --depth=1 https://github.com/libuv/libuv.git
+          git clone https://github.com/libuv/libuv.git
+          git checkout tags/${{ github.event.inputs.tag }}
 
       - name: Build libuv
         run: |
