@@ -121,6 +121,7 @@ jobs:
       - name: Build libuv on Linux
         shell: bash
         run: |
+          git update-index --chmod=+x ./build.sh
           ./build.sh ${{matrix.build_type}}
 
       - name: Compress Package on Ubuntu
