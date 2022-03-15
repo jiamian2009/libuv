@@ -121,7 +121,7 @@ jobs:
       - name: Build libuv on Linux
         shell: bash
         run: |
-          .\build.sh ${{matrix.build_type}}
+          ./build.sh ${{matrix.build_type}}
 
       - name: Compress Package on Ubuntu
         run: |
