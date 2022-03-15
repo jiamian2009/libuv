@@ -20,7 +20,7 @@ jobs:
           tag_name: ${{ github.event.inputs.tag }} # tag name to delete
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Create tag
         uses: actions/github-script@v3
         with:
@@ -49,17 +49,13 @@ jobs:
           echo "::set-output name=y::${{ steps.create_release.outputs.upload_url }}"
           echo "${{ steps.create_release.outputs.upload_url }}"
 
-  build:
+  windows-build:
     needs: init
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-2019
     strategy:
       matrix:
         build_type: ["Debug", "Release"]
         arch: ["x86", "x64"]
-        os: [windows-2019, ubuntu-20.04]
-        exclude:
-        - os: ubuntu-20.04
-          arch: x86
 
     steps:
       - name: Checkout
@@ -68,14 +64,12 @@ jobs:
           fetch-depth: 1
 
       - name: Install Server-Media-Foundation
-        if: ${{ matrix.os }} == "windows-2019"
         shell: powershell
         run: |
           echo ${{ matrix.os }}
           Install-WindowsFeature Server-Media-Foundation
 
       - name: Add msbuild to PATH
-        if: ${{ matrix.os }} == "windows-2019"
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Download libuv
@@ -90,21 +84,48 @@ jobs:
           . ".\build.ps1"
           ls
           BuildForWindows ${{matrix.arch}} ${{matrix.build_type}}
-      
+
+      - name: Compress Package on Windows
+        run: |
+          7z a libuv-${{ github.event.inputs.tag }}.zip ./build/install/* -r
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.init.outputs.output1 }}
+          asset_path: libuv-${{ github.event.inputs.tag }}.zip
+          asset_name: libuv-${{ github.event.inputs.tag }}-${{matrix.build_type}}-${{matrix.arch}}-${{runner.os}}.zip
+          asset_content_type: application/zip
+
+  linux-build:
+    needs: init
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type: ["Debug", "Release"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Download libuv
+        run: |
+          git clone https://github.com/libuv/libuv.git
+          cd libuv
+          git checkout ${{ github.event.inputs.tag }}
+          cd ..
+
       - name: Build libuv on Linux
         shell: bash
         run: |
           .\build.sh ${{matrix.build_type}}
 
-      - name: Compress Package on Windows
-        if: ${{ matrix.os }} == "windows-2019"
-        run: |
-          7z a libuv-${{ github.event.inputs.tag }}.zip ./build/install/* -r
-      
       - name: Compress Package on Ubuntu
-        if: ${{ matrix.os }} == "ubuntu-20.04"
         run: |
-          zip -r libuv-${{ github.event.inputs.tag }}.zip ./build/install/*    
+          zip -r libuv-${{ github.event.inputs.tag }}.zip ./build/install/*
 
       - name: Upload Release Asset
         id: upload-release-asset
