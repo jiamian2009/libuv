@@ -51,12 +51,15 @@ jobs:
 
   build:
     needs: init
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         build_type: ["Debug", "Release"]
         arch: ["x86", "x64"]
-
-    runs-on: windows-2019
+        os: [windows-2019, ubuntu-20.04]
+        exclude:
+        - os: ubuntu-20.04
+          arch: x86
 
     steps:
       - name: Checkout
@@ -79,15 +82,29 @@ jobs:
           git checkout ${{ github.event.inputs.tag }}
           cd ..
 
-      - name: Build libuv
+      - name: Build libuv on Windows
         run: |
           . ".\build.ps1"
           ls
           BuildForWindows ${{matrix.arch}} ${{matrix.build_type}}
+      
+      - name: Build libuv on Linux
+        shell: bash
+        run: |
+          .\build.sh ${{matrix.build_type}}
 
-      - name: Compress Package
+      - name: Compress Package on Windows
+        if: ${{ matrix.os }} == "windows-2019"
         run: |
           7z a libuv-${{ github.event.inputs.tag }}.zip ./build/install/* -r
+      
+      - name: Compress Package on Ubuntu
+        if: ${{ matrix.os }} == "ubuntu-20.04"
+        run: |
+          zip -r libuv-${{ github.event.inputs.tag }}.zip ./build/install/*
+
+      - name: Get asset_name
+        
 
       - name: Upload Release Asset
         id: upload-release-asset
@@ -97,5 +114,5 @@ jobs:
         with:
           upload_url: ${{ needs.init.outputs.output1 }}
           asset_path: libuv-${{ github.event.inputs.tag }}.zip
-          asset_name: libuv-${{ github.event.inputs.tag }}-${{matrix.build_type}}-${{matrix.arch}}-win.zip
+          asset_name: libuv-${{ github.event.inputs.tag }}-${{matrix.build_type}}-${{matrix.arch}}-${{runner.os}}.zip
           asset_content_type: application/zip
