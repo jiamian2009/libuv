@@ -121,8 +121,10 @@ jobs:
       - name: Build libuv on Linux
         shell: bash
         run: |
-          git update-index --chmod=+x ./build.sh
-          ./build.sh ${{matrix.build_type}}
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=${{matrix.build_type}}  -DCMAKE_INSTALL_PREFIX=install ../libuv
+          make && make install
 
       - name: Compress Package on Ubuntu
         run: |
