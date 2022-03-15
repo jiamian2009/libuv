@@ -105,6 +105,7 @@ jobs:
     strategy:
       matrix:
         build_type: ["Debug", "Release"]
+        arch: ["x64"]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -127,7 +128,8 @@ jobs:
 
       - name: Compress Package on Ubuntu
         run: |
-          zip -r libuv-${{ github.event.inputs.tag }}.zip ./build/install/*
+          cd ./build/install
+          zip -r libuv-${{ github.event.inputs.tag }}.zip ../../
 
       - name: Upload Release Asset
         id: upload-release-asset
