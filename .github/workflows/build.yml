@@ -71,6 +71,7 @@ jobs:
         if: ${{ matrix.os }} == "windows-2019"
         shell: powershell
         run: |
+          echo ${{ matrix.os }}
           Install-WindowsFeature Server-Media-Foundation
 
       - name: Add msbuild to PATH
