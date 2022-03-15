@@ -56,7 +56,7 @@ jobs:
         build_type: ["Debug", "Release"]
         arch: ["x86", "x64"]
 
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
       - name: Checkout
