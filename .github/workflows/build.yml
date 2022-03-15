@@ -101,10 +101,7 @@ jobs:
       - name: Compress Package on Ubuntu
         if: ${{ matrix.os }} == "ubuntu-20.04"
         run: |
-          zip -r libuv-${{ github.event.inputs.tag }}.zip ./build/install/*
-
-      - name: Get asset_name
-        
+          zip -r libuv-${{ github.event.inputs.tag }}.zip ./build/install/*    
 
       - name: Upload Release Asset
         id: upload-release-asset
