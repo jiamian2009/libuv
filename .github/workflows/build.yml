@@ -70,7 +70,9 @@ jobs:
           Install-WindowsFeature Server-Media-Foundation
 
       - name: Add msbuild to PATH
-        uses: microsoft/setup-msbuild@v1.0.2
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          vs-version: '[16.4,16.5)'
 
       - name: Download libuv
         run: |
@@ -82,6 +84,7 @@ jobs:
       - name: Build libuv
         run: |
           . ".\build.ps1"
+          ls
           BuildForWindows ${{matrix.arch}} ${{matrix.build_type}}
 
       - name: Compress Package
