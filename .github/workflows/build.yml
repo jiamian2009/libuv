@@ -68,7 +68,7 @@ jobs:
           fetch-depth: 1
 
       - name: Install Server-Media-Foundation
-        if: matrix.os == "windows-2019"
+        if: ${{ matrix.os }} == "windows-2019"
         shell: powershell
         run: |
           echo ${{ matrix.os }}
