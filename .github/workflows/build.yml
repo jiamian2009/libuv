@@ -68,11 +68,13 @@ jobs:
           fetch-depth: 1
 
       - name: Install Server-Media-Foundation
+        if: ${{ matrix.os }} == "windows-2019"
         shell: powershell
         run: |
           Install-WindowsFeature Server-Media-Foundation
 
       - name: Add msbuild to PATH
+        if: ${{ matrix.os }} == "windows-2019"
         uses: microsoft/setup-msbuild@v1.1
 
       - name: Download libuv
