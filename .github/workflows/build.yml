@@ -129,7 +129,8 @@ jobs:
       - name: Compress Package on Ubuntu
         run: |
           cd ./build/install
-          zip -r libuv-${{ github.event.inputs.tag }}.zip ../../
+          zip -r libuv-${{ github.event.inputs.tag }}.zip ./*
+          mv libuv-${{ github.event.inputs.tag }}.zip ../../libuv-${{ github.event.inputs.tag }}.zip
 
       - name: Upload Release Asset
         id: upload-release-asset
