@@ -80,7 +80,7 @@ jobs:
 
       - name: Build libuv on Windows
         run: |
-          . ".\build.ps1"
+          . ".\build_mingw.ps1"
           ls
           BuildForWindows ${{matrix.arch}} ${{matrix.build_type}}
 
